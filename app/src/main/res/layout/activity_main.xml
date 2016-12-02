@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    android:id="@+id/activity_main"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="com.unist.netlab.fakturk.pagemoverwithgravityscreen.MainActivity">
+
+    <WebView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+
+        android:layout_below="@+id/textView"
+        android:id="@+id/webView"
+        android:layout_above="@+id/switchAcc">
+
+    </WebView>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Hello World!"
+        android:id="@+id/textView"
+        android:visibility="invisible"/>
+
+    <Switch
+        android:text="Smooth"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/switchSmoothReset"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:textSize="12sp"
+        android:layout_toEndOf="@+id/switchAcc"
+        android:enabled="false"/>
+
+    <Switch
+        android:text="Reset"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/switchReset"
+        android:layout_below="@+id/webView"
+        android:layout_alignParentEnd="true"
+        android:layout_toEndOf="@+id/switchAcc"/>
+
+    <Switch
+        android:text="Only Gyr"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/switch_gyr"
+        android:layout_alignParentBottom="true"
+        android:layout_alignStart="@+id/switchAcc"
+        android:layout_toStartOf="@+id/switchReset"/>
+
+    <Button
+        android:text="Start"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_x="0dp"
+        android:layout_y="432dp"
+        android:id="@+id/buttonStart"
+        android:elevation="24dp"
+        style="@style/Widget.AppCompat.Button.Small"
+        android:textSize="12sp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true"/>
+
+    <Button
+        android:text="Reset"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_x="0dp"
+        android:layout_y="432dp"
+        android:id="@+id/buttonReset"
+        android:elevation="24dp"
+        style="@style/Widget.AppCompat.Button.Small"
+        android:textSize="12sp"
+        android:layout_alignParentBottom="true"
+        android:layout_toEndOf="@+id/buttonStart"/>
+
+    <Switch
+        android:text="Acc Enable"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/switchAcc"
+        android:layout_above="@+id/switchSmoothReset"
+        android:layout_toEndOf="@+id/buttonReset"
+        android:enabled="false"/>
+
+    <com.unist.netlab.fakturk.pagemoverwithgravityscreen.ArrowView
+        android:layout_width="170dp"
+        android:layout_height="210dp"
+        android:id="@+id/graView"
+
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"/>
+
+    <Switch
+        android:text="Show Gravity"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/switchGra"
+        android:layout_alignBaseline="@+id/textView"
+        android:layout_alignBottom="@+id/textView"
+        android:layout_toStartOf="@+id/switchAcc"
+        android:checked="true"/>
+</RelativeLayout>
