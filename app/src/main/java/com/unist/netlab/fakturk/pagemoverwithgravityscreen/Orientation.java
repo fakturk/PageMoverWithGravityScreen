@@ -81,6 +81,21 @@ public class Orientation
         }
         return euler;
     }
+    float[][] rotationFromRotation(float[][] R1, float[][] R2)
+    {
+        float[][] R=new float[3][3];
+        for (int i = 0; i < 3; i++)
+        {
+            for (int j = 0; j < 3; j++)
+            {
+                for (int k = 0; k < 3; k++)
+                {
+                    R[i][j] += R1[i][k]*R2[k][i];
+                }
+            }
+        }
+        return R;
+    }
 
     float[][] rotationFromGravity(float[] gravity)
     {

@@ -14,7 +14,9 @@ import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
+import android.widget.SeekBar;
 import android.widget.Switch;
+import android.widget.TextView;
 
 import static android.hardware.SensorManager.GRAVITY_EARTH;
 
@@ -25,7 +27,9 @@ public class MainActivity extends AppCompatActivity
     ArrowView gravityView;
     Button buttonStart, buttonReset;
     Switch switchGyr, switchAcc, switchReset, switchSmooth, switchGra;
+    SeekBar slider;
     ViewGroup.MarginLayoutParams marginParams;
+    TextView sensitivity;
 
 
 
@@ -38,6 +42,7 @@ public class MainActivity extends AppCompatActivity
     DynamicAcceleration dynamic;
     int counter;
     float omega_x, omega_y, omega_z;
+    int sliderValue;
 
 
     @Override
@@ -53,6 +58,13 @@ public class MainActivity extends AppCompatActivity
         switchReset = (Switch) findViewById(R.id.switchReset);
         switchSmooth = (Switch) findViewById(R.id.switchSmoothReset);
         switchGra = (Switch) findViewById(R.id.switchGra);
+        sensitivity = (TextView) findViewById(R.id.textView);
+        slider = (SeekBar) findViewById(R.id.seekBar);
+        sliderValue = 60;
+        slider.setMax(60);
+        slider.setProgress(60);
+
+
 
         gravityView = (ArrowView) findViewById(R.id.graView);
 
@@ -221,8 +233,10 @@ public class MainActivity extends AppCompatActivity
 //                        rotational_vel_earth[1]+=reRotatedGyr[1]* dynamic.getDeltaT();
 //                        rotational_vel_earth[2]+=reRotatedGyr[2]* dynamic.getDeltaT();
 
-                        rotational_vel_earth = orientation.eulerFromRotation(rotation);
+//                        rotational_vel_earth = orientation.eulerFromRotation(orientation.rotationFromRotation(orientation.rotationFromEuler(startingEuler), rotation));
 
+                        rotational_vel_earth = orientation.eulerFromRotation(rotation);
+                        rotational_vel_earth = orientation.reRotatedGyr(rotational_vel_earth,rotation);
 
                         sideX = g.sideXAfterRotation(rotation);
                         sideY = g.sideYAfterRotation(rotation);
@@ -248,7 +262,9 @@ public class MainActivity extends AppCompatActivity
                         for (int i = 0; i < 3; i++)
                         {
                             rotationValues[i]=rotational_vel_earth[i] - startingEuler[i];
+//                            rotationValues[i]=rotational_vel_earth[i];
                         }
+                        rotationValues[0]*=-1;
 
                     }
                     if (accEnable)
@@ -277,9 +293,10 @@ public class MainActivity extends AppCompatActivity
                     int lS = 20; // size coefficient of the line
                     gravityView.setLine((-1)*gravity[0]*lS,gravity[1]*lS,gravity[2]*lS);
 
-                    netlab.setRotationX(rotationValues[0] * 10);
-                    netlab.setRotationY( rotationValues[1] * 10);
-                    netlab.setRotation(rotationValues[2] * 10);
+                    netlab.setRotationX(rotationValues[0] * sliderValue);
+                    netlab.setRotationY( rotationValues[1] * sliderValue);
+                    netlab.setRotation(rotationValues[2] * sliderValue);
+//                    System.out.println(rotationValues[2]*sliderValue);
 
 
                 }
@@ -409,6 +426,29 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
+        slider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener()
+        {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int i, boolean b)
+            {
+                sliderValue = i;
+                sensitivity.setText("Sensitiviy: "+i);
+
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar)
+            {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar)
+            {
+
+            }
+        });
+
 
 
 
@@ -429,9 +469,9 @@ public class MainActivity extends AppCompatActivity
         omega_y /=factor;
         omega_z /=factor;
 
-        System.out.println("rotation before: "+netlab.getRotation());
+//        System.out.println("rotation before: "+netlab.getRotation());
         netlab.setRotation(netlab.getRotation()/factor);
-        System.out.println("rotation after: "+netlab.getRotation());
+//        System.out.println("rotation after: "+netlab.getRotation());
         netlab.setRotationX(netlab.getRotationX()/factor);
         netlab.setRotationY(netlab.getRotationY()/factor);
 

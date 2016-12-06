@@ -21,13 +21,6 @@
 
     </WebView>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hello World!"
-        android:id="@+id/textView"
-        android:visibility="invisible"/>
-
     <Switch
         android:text="Smooth"
         android:layout_width="wrap_content"
@@ -109,4 +102,21 @@
         android:layout_alignBottom="@+id/textView"
         android:layout_toStartOf="@+id/switchAcc"
         android:checked="true"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Sensitivity: 60"
+        android:id="@+id/textView"
+        android:visibility="visible"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentTop="true"/>
+
+    <SeekBar
+        android:layout_width="100dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/seekBar"
+        android:layout_below="@+id/textView"
+        android:layout_toEndOf="@+id/switchGra"/>
+
 </RelativeLayout>
