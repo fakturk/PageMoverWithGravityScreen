@@ -128,8 +128,8 @@ public class SensorService extends Service implements SensorEventListener
                     ACC_DATA[1] = se.values[1];
                     ACC_DATA[2] = se.values[2];
 
-                    acc_string = Long.toString(timeInMillis)+" ";
-                    acc_string +=(ACC_DATA[0]+" "+ACC_DATA[1]+" "+ACC_DATA[2]+"\n");
+//                    acc_string = Long.toString(timeInMillis)+" ";
+//                    acc_string +=(ACC_DATA[0]+" "+ACC_DATA[1]+" "+ACC_DATA[2]+"\n");
 
                     intent.putExtra("ACC", text_acc);
                     intent.putExtra("ACC_DATA", ACC_DATA);
@@ -146,8 +146,8 @@ public class SensorService extends Service implements SensorEventListener
                     GYR_DATA[2] = se.values[2];
 
 
-                    gyr_string = Long.toString(timeInMillis)+" ";
-                    gyr_string += (GYR_DATA[0]+" "+GYR_DATA[1]+" "+GYR_DATA[2]+"\n");
+//                    gyr_string = Long.toString(timeInMillis)+" ";
+//                    gyr_string += (GYR_DATA[0]+" "+GYR_DATA[1]+" "+GYR_DATA[2]+"\n");
 
                     intent.putExtra("GYR", text_gyr);
 
@@ -163,6 +163,10 @@ public class SensorService extends Service implements SensorEventListener
                     MAG_DATA[0] = se.values[0];
                     MAG_DATA[1] = se.values[1];
                     MAG_DATA[2] = se.values[2];
+
+                    intent.putExtra("MAG", text_gyr);
+
+                    intent.putExtra("MAG_DATA", MAG_DATA);
                     break;
 
 
