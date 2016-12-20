@@ -33,7 +33,7 @@ public class MainActivity extends AppCompatActivity
 
 
 
-    float[] acc, gyr, oldAcc, oldGyr, gravity, sideY, sideX, oldGravity, rotatedGyr, rotational_vel, rotational_vel_earth, linear_acc, linear_vel, linear_dist, startingEuler;
+    float[] acc, gyr, oldAcc, oldGyr,mag, oldMag,gravity, sideY, sideX, oldGravity, rotatedGyr, rotational_vel, rotational_vel_earth, linear_acc, linear_vel, linear_dist, startingEuler;
     float[][] rotation, resultOfDynamic;
     boolean start, onlyGyr, accEnable, resetEnable, smoothEnable;
 
@@ -78,8 +78,10 @@ public class MainActivity extends AppCompatActivity
 
         acc = new float[3];
         gyr = new float[3];
+        mag = new float[3];
         oldAcc = null;
         oldGyr = null;
+        oldMag =null;
         gravity = new float[3];
         sideX = new float[3];
         sideY = new float[3];
@@ -121,6 +123,7 @@ public class MainActivity extends AppCompatActivity
 
                 acc = (intent.getFloatArrayExtra("ACC_DATA"));
                 gyr = intent.getFloatArrayExtra("GYR_DATA");
+                mag = intent.getFloatArrayExtra("MAG_DATA");
 
                 if (acc != null && oldAcc == null)
                 {
@@ -134,6 +137,12 @@ public class MainActivity extends AppCompatActivity
                     System.arraycopy(gyr, 0, oldGyr, 0, gyr.length);
 
                 }
+                if (mag != null && oldMag == null)
+                {
+                    oldMag = new float[3];
+                    System.arraycopy(mag, 0, oldMag, 0, mag.length);
+
+                }
                 if (acc == null && oldAcc != null)
                 {
                     acc = new float[3];
@@ -143,6 +152,12 @@ public class MainActivity extends AppCompatActivity
                 if (gyr == null && oldGyr != null)
                 {
                     gyr = new float[]{0, 0, 0};
+
+                }
+                if (mag == null && oldMag != null)
+                {
+                    mag = new float[3];
+                    System.arraycopy(oldMag, 0, mag, 0, oldMag.length);
 
                 }
 
@@ -163,6 +178,7 @@ public class MainActivity extends AppCompatActivity
                 }
                 if (start)
                 {
+                    System.out.println("magnetometer readings : "+mag[0]+", "+mag[1]+", "+mag[2]);
 
                     float thresholdAcc = 0; //0.15
                     float thresholdGyr = 0.15f; //0.2
@@ -247,6 +263,7 @@ public class MainActivity extends AppCompatActivity
 
                     //store acc values
                     System.arraycopy(acc, 0, oldAcc, 0, acc.length);
+                    System.arraycopy(mag, 0, oldMag, 0, acc.length);
                     float[] rotationValues = new float[]{0,0,0};
 
                     if (onlyGyr)
