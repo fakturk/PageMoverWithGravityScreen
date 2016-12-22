@@ -24,9 +24,9 @@ public class MainActivity extends AppCompatActivity
 {
 
     WebView netlab;
-    ArrowView gravityView;
+    ArrowView gravityView, compassView;
     Button buttonStart, buttonReset;
-    Switch switchGyr, switchAcc, switchReset, switchSmooth, switchGra;
+    Switch switchGyr, switchAcc, switchReset, switchSmooth, switchGra, switchCompass;
     SeekBar slider;
     ViewGroup.MarginLayoutParams marginParams;
     TextView sensitivity;
@@ -58,6 +58,7 @@ public class MainActivity extends AppCompatActivity
         switchReset = (Switch) findViewById(R.id.switchReset);
         switchSmooth = (Switch) findViewById(R.id.switchSmoothReset);
         switchGra = (Switch) findViewById(R.id.switchGra);
+        switchCompass = (Switch) findViewById(R.id.switchCompass);
         sensitivity = (TextView) findViewById(R.id.textView);
         slider = (SeekBar) findViewById(R.id.seekBar);
         sliderValue = 60;
@@ -67,6 +68,7 @@ public class MainActivity extends AppCompatActivity
 
 
         gravityView = (ArrowView) findViewById(R.id.graView);
+        compassView = (ArrowView) findViewById(R.id.compassView);
 
         netlab = (WebView) findViewById(R.id.webView);
         netlab.setWebViewClient(new MyWebViewClient());
@@ -178,7 +180,7 @@ public class MainActivity extends AppCompatActivity
                 }
                 if (start)
                 {
-                    System.out.println("magnetometer readings : "+mag[0]+", "+mag[1]+", "+mag[2]);
+//                    System.out.println("magnetometer readings : "+mag[0]+", "+mag[1]+", "+mag[2]);
 
                     float thresholdAcc = 0; //0.15
                     float thresholdGyr = 0.15f; //0.2
@@ -308,7 +310,11 @@ public class MainActivity extends AppCompatActivity
 
                     //set views
                     int lS = 20; // size coefficient of the line
+
+                    float magMagnitude = (float) Math.sqrt( Math.pow(mag[0],2)+Math.pow(mag[1],2)+Math.pow(mag[2],2));
+                    float mS =lS*10/magMagnitude; // magnetometer line size coefficient
                     gravityView.setLine((-1)*gravity[0]*lS,gravity[1]*lS,gravity[2]*lS);
+                    compassView.setLine(mag[0]*mS, -1*mag[1]*mS, -1*mag[2]*mS);
 
                     netlab.setRotationX(rotationValues[0] * sliderValue);
                     netlab.setRotationY( rotationValues[1] * sliderValue);
@@ -439,6 +445,21 @@ public class MainActivity extends AppCompatActivity
                 } else
                 {
                     gravityView.setVisibility(View.INVISIBLE);
+                }
+            }
+        });
+        switchCompass.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+
+                if (switchCompass.isChecked())
+                {
+                    compassView.setVisibility(View.VISIBLE);
+                } else
+                {
+                    compassView.setVisibility(View.INVISIBLE);
                 }
             }
         });

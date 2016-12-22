@@ -85,24 +85,6 @@
         android:layout_toEndOf="@+id/buttonReset"
         android:enabled="false"/>
 
-    <com.unist.netlab.fakturk.pagemoverwithgravityscreen.ArrowView
-        android:layout_width="170dp"
-        android:layout_height="210dp"
-        android:id="@+id/graView"
-
-        android:layout_alignParentTop="true"
-        android:layout_alignParentEnd="true"/>
-
-    <Switch
-        android:text="Show Gravity"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/switchGra"
-        android:layout_alignBaseline="@+id/textView"
-        android:layout_alignBottom="@+id/textView"
-        android:layout_toStartOf="@+id/switchAcc"
-        android:checked="true"/>
-
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -118,5 +100,47 @@
         android:id="@+id/seekBar"
         android:layout_below="@+id/textView"
         android:layout_toEndOf="@+id/switchGra"/>
+
+    <com.unist.netlab.fakturk.pagemoverwithgravityscreen.ArrowView
+        android:layout_width="170dp"
+        android:layout_height="210dp"
+        android:id="@+id/graView"
+
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"/>
+
+    <com.unist.netlab.fakturk.pagemoverwithgravityscreen.ArrowView
+        android:layout_width="170dp"
+        android:layout_height="210dp"
+        android:id="@+id/compassView"
+
+        android:layout_x="182dp"
+        android:layout_y="194dp"
+        android:layout_below="@+id/graView"
+        android:layout_alignParentEnd="true"/>
+
+    <Switch
+        android:text="Compass"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/switchCompass"
+        android:checked="true"
+        android:layout_alignTop="@+id/webView"
+        android:layout_alignStart="@+id/switchGra"
+        android:fontFamily="sans-serif-medium"
+        android:layout_toStartOf="@+id/seekBar"
+        android:textSize="14sp"/>
+
+    <Switch
+        android:text="Gravity"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/switchGra"
+        android:checked="true"
+        android:layout_alignBaseline="@+id/textView"
+        android:layout_alignBottom="@+id/textView"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="14dp"
+        android:layout_toStartOf="@+id/textView"/>
 
 </RelativeLayout>
