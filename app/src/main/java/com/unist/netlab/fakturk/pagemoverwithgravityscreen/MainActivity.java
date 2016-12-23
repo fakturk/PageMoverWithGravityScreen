@@ -180,7 +180,7 @@ public class MainActivity extends AppCompatActivity
                 }
                 if (start)
                 {
-//                    System.out.println("magnetometer readings : "+mag[0]+", "+mag[1]+", "+mag[2]);
+
 
                     float thresholdAcc = 0; //0.15
                     float thresholdGyr = 0.15f; //0.2
@@ -310,11 +310,13 @@ public class MainActivity extends AppCompatActivity
 
                     //set views
                     int lS = 20; // size coefficient of the line
+                                        System.out.println("magnetometer readings : "+mag[0]+", "+mag[1]+", "+mag[2]);
 
                     float magMagnitude = (float) Math.sqrt( Math.pow(mag[0],2)+Math.pow(mag[1],2)+Math.pow(mag[2],2));
+//                    magMagnitude = 10;
                     float mS =lS*10/magMagnitude; // magnetometer line size coefficient
                     gravityView.setLine((-1)*gravity[0]*lS,gravity[1]*lS,gravity[2]*lS);
-                    compassView.setLine(mag[0]*mS, -1*mag[1]*mS, -1*mag[2]*mS);
+                    compassView.setLine(mag[0]*mS, -1*mag[1]*mS, mag[2]*mS);
 
                     netlab.setRotationX(rotationValues[0] * sliderValue);
                     netlab.setRotationY( rotationValues[1] * sliderValue);
