@@ -33,7 +33,7 @@ public class MainActivity extends AppCompatActivity
 
 
 
-    float[] acc, gyr, oldAcc, oldGyr,mag, oldMag,gravity, sideY, sideX, oldGravity, rotatedGyr, rotational_vel, rotational_vel_earth, linear_acc, linear_vel, linear_dist, startingEuler;
+    float[] acc, gyr, oldAcc, oldGyr,mag, oldMag,initialMag,gravity, sideY, sideX, oldGravity, rotatedGyr, rotational_vel, rotational_vel_earth, linear_acc, linear_vel, linear_dist, startingEuler;
     float[][] rotation, resultOfDynamic;
     boolean start, onlyGyr, accEnable, resetEnable, smoothEnable;
 
@@ -41,7 +41,7 @@ public class MainActivity extends AppCompatActivity
     Orientation orientation;
     DynamicAcceleration dynamic;
     int counter;
-    float omega_x, omega_y, omega_z;
+    float omega_x, omega_y, omega_z, angle;
     int sliderValue;
 
 
@@ -81,6 +81,7 @@ public class MainActivity extends AppCompatActivity
         acc = new float[3];
         gyr = new float[3];
         mag = new float[3];
+        initialMag = new float[]{0, 0, 0};
         oldAcc = null;
         oldGyr = null;
         oldMag =null;
@@ -164,9 +165,10 @@ public class MainActivity extends AppCompatActivity
                 }
 
 
-                if (acc != null && gyr != null && start != true)
+                if (acc != null && gyr != null && mag!=null &&start != true )
                 {
                     start = true;
+                    System.out.println("start");
                     float accNorm = (float) Math.sqrt(Math.pow(acc[0], 2) + Math.pow(acc[1], 2) + Math.pow(acc[2], 2));
                     for (int j = 0; j < 3; j++)
                     {
@@ -174,6 +176,10 @@ public class MainActivity extends AppCompatActivity
                     }
                     rotation = orientation.rotationFromGravity(gravity);
                     startingEuler = orientation.eulerFromRotation(rotation);
+
+                    initialMag = orientation.rotationVectorMultiplication(orientation.rotationTranspose(rotation),mag);
+
+//                    System.arraycopy(mag, 0, initialMag, 0, mag.length);
 
 
 
@@ -243,8 +249,10 @@ public class MainActivity extends AppCompatActivity
                         rotation = orientation.updateRotationMatrix(rotation, rotatedGyr, dynamic.getDeltaT());
 
                         gravity = g.gravityAfterRotation(rotation);
+//                        angle = orientation.angleBetweenMag(initialMag,mag);
+                        angle =  (orientation.angleBetweenMag(initialMag,orientation.rotationVectorMultiplication(orientation.rotationTranspose(rotation),mag)));
 
-                        rotation = orientation.updateRotationAfterOmegaZ(rotation, omega_z);
+                        rotation = orientation.updateRotationAfterOmegaZ(rotation, (float) (Math.toRadians(angle)));
                         float[] reRotatedGyr = orientation.reRotatedGyr(rotatedGyr,rotation);
 
 //                        rotational_vel_earth[0]+=reRotatedGyr[0]* dynamic.getDeltaT();
@@ -310,13 +318,30 @@ public class MainActivity extends AppCompatActivity
 
                     //set views
                     int lS = 20; // size coefficient of the line
-                                        System.out.println("magnetometer readings : "+mag[0]+", "+mag[1]+", "+mag[2]);
+//                    System.out.println("magnetometer readings : "+mag[0]+", "+mag[1]+", "+mag[2]);
+//                    System.out.println("initial magnetometer readings : "+initialMag[0]+", "+initialMag[1]+", "+initialMag[2]);
 
-                    float magMagnitude = (float) Math.sqrt( Math.pow(mag[0],2)+Math.pow(mag[1],2)+Math.pow(mag[2],2));
+                    float[] rotMag = orientation.rotationVectorMultiplication(orientation.rotationTranspose(rotation),mag);
+
+//                    System.out.println("acc readings : "+acc[0]+", "+acc[1]+", "+acc[2]);
+//                    System.out.println("gyr readings : "+gyr[0]+", "+gyr[1]+", "+gyr[2]);
+//                    System.out.println("magnetometer readings : "+mag[0]+", "+mag[1]+", "+mag[2]);
+//                    System.out.println("initial magnetometer readings : "+initialMag[0]+", "+initialMag[1]+", "+initialMag[2]);
+//                    System.out.println("rotated magnetometer readings : "+rotMag[0]+", "+rotMag[1]+", "+rotMag[2]);
+//                    System.out.println("gravity readings : "+gravity[0]+", "+gravity[1]+", "+gravity[2]);
+
+
+                    System.out.print("angle : "+angle);
+                    System.out.println(", "+omega_z);
+//                    System.out.println("angle : "+orientation.angleBetweenMag(initialMag,mag));
+                    float magMagnitude = (float) Math.sqrt( Math.pow(rotMag[0],2)+Math.pow(rotMag[1],2)+Math.pow(rotMag[2],2));
 //                    magMagnitude = 10;
                     float mS =lS*10/magMagnitude; // magnetometer line size coefficient
                     gravityView.setLine((-1)*gravity[0]*lS,gravity[1]*lS,gravity[2]*lS);
+
                     compassView.setLine(mag[0]*mS, -1*mag[1]*mS, mag[2]*mS);
+                    compassView.setAccLine(initialMag[0]*mS, -1*initialMag[1]*mS, initialMag[2]*mS);
+                    compassView.setType(String.valueOf(angle));
 
                     netlab.setRotationX(rotationValues[0] * sliderValue);
                     netlab.setRotationY( rotationValues[1] * sliderValue);
@@ -594,6 +619,7 @@ public class MainActivity extends AppCompatActivity
     protected void onPause() {
 
         super.onPause();
+        stopService(getIntent());
 
 
     }
@@ -612,6 +638,7 @@ public class MainActivity extends AppCompatActivity
 
 
         super.onDestroy();
+        stopService(getIntent());
     }
 
 

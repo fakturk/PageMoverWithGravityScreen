@@ -133,10 +133,26 @@ public class Orientation
 
     }
 
+    float[] rotationVectorMultiplication(float[][] R, float[] v)
+    {
+        float[] rotated= new float[3];
+
+
+        for (int i = 0; i < 3; i++)
+        {
+            rotated[i]=0;
+            for (int j = 0; j < 3; j++)
+            {
+                rotated[i]+= R[i][j]*v[j];
+            }
+        }
+        return rotated;
+    }
+
     float[] rotatedGyr(float[] gyr, float[][] R)
     {
         float[] rotated= new float[3];
-        R=rotationTransform(R);
+        R= rotationTranspose(R);
 
         for (int i = 0; i < 3; i++)
         {
@@ -150,21 +166,10 @@ public class Orientation
     }
     float[] reRotatedGyr(float[] gyr, float[][] R)
     {
-        float[] rotated= new float[3];
-
-
-        for (int i = 0; i < 3; i++)
-        {
-            rotated[i]=0;
-            for (int j = 0; j < 3; j++)
-            {
-                rotated[i]+= R[i][j]*gyr[j];
-            }
-        }
-        return rotated;
+        return rotationVectorMultiplication(R,gyr);
     }
 
-    float[][] rotationTransform(float[][] R)
+    float[][] rotationTranspose(float[][] R)
     {
         float[][] T=new float[3][3];
 
@@ -266,6 +271,25 @@ public class Orientation
 
     }
 
+    float angleBetweenMag(float[] initial, float[] current)
+    {
+        float angle;
+        float dotProduct = (initial[0]*current[0]+initial[1]*current[1]);
+        float initialMagnitude = (float) Math.sqrt(Math.pow(initial[0],2)+Math.pow(initial[1],2));
+        float currentMagnitude = (float) Math.sqrt(Math.pow(current[0],2)+Math.pow(current[1],2));
+
+
+        angle = (float) Math.toDegrees( Math.acos(dotProduct/(initialMagnitude*currentMagnitude)));
+        if (current[0]/currentMagnitude>initial[0]/initialMagnitude)
+        {
+            angle*=-1;
+        }
+
+//        System.out.println("dotProduct: "+dotProduct+", initialMag: "+initialMagnitude+", currentMag: "+currentMagnitude);
+
+        return angle;
+    }
+
     void printRotation(float[][]R)
     {
         System.out.println("Rotation Matrix: ");
@@ -276,5 +300,6 @@ public class Orientation
             System.out.println();
         }
     }
+
 
 }
