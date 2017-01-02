@@ -252,7 +252,7 @@ public class MainActivity extends AppCompatActivity
 //                        angle = orientation.angleBetweenMag(initialMag,mag);
                         angle =  (orientation.angleBetweenMag(initialMag,orientation.rotationVectorMultiplication(orientation.rotationTranspose(rotation),mag)));
 
-                        rotation = orientation.updateRotationAfterOmegaZ(rotation, (float) (Math.toRadians(angle)));
+                        rotation = orientation.updateRotationAfterOmegaZ(rotation, angle);
                         float[] reRotatedGyr = orientation.reRotatedGyr(rotatedGyr,rotation);
 
 //                        rotational_vel_earth[0]+=reRotatedGyr[0]* dynamic.getDeltaT();
@@ -331,7 +331,7 @@ public class MainActivity extends AppCompatActivity
 //                    System.out.println("gravity readings : "+gravity[0]+", "+gravity[1]+", "+gravity[2]);
 
 
-                    System.out.print("angle : "+angle);
+                    System.out.print("angle : "+Math.toDegrees(angle));
                     System.out.println(", "+omega_z);
 //                    System.out.println("angle : "+orientation.angleBetweenMag(initialMag,mag));
                     float magMagnitude = (float) Math.sqrt( Math.pow(rotMag[0],2)+Math.pow(rotMag[1],2)+Math.pow(rotMag[2],2));
@@ -341,7 +341,7 @@ public class MainActivity extends AppCompatActivity
 
                     compassView.setLine(mag[0]*mS, -1*mag[1]*mS, mag[2]*mS);
                     compassView.setAccLine(initialMag[0]*mS, -1*initialMag[1]*mS, initialMag[2]*mS);
-                    compassView.setType(String.valueOf(angle));
+                    compassView.setType(String.valueOf(Math.toDegrees(angle)));
 
                     netlab.setRotationX(rotationValues[0] * sliderValue);
                     netlab.setRotationY( rotationValues[1] * sliderValue);

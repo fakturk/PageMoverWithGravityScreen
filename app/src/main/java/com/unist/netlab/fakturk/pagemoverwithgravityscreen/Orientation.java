@@ -275,17 +275,21 @@ public class Orientation
     {
         float angle;
         float dotProduct = (initial[0]*current[0]+initial[1]*current[1]);
+        float determinant = (initial[0]*current[0]-initial[1]*current[1]);
         float initialMagnitude = (float) Math.sqrt(Math.pow(initial[0],2)+Math.pow(initial[1],2));
         float currentMagnitude = (float) Math.sqrt(Math.pow(current[0],2)+Math.pow(current[1],2));
 
+        float sign = initial[0]*current[1]-initial[1]*current[0];
 
-        angle = (float) Math.toDegrees( Math.acos(dotProduct/(initialMagnitude*currentMagnitude)));
-        if (current[0]/currentMagnitude>initial[0]/initialMagnitude)
+
+        angle = (float) Math.acos(dotProduct/(initialMagnitude*currentMagnitude));
+//        angle = (float) Math.atan2(determinant,dotProduct);
+        boolean isright=false;
+
+        if (sign>0)
         {
             angle*=-1;
         }
-
-//        System.out.println("dotProduct: "+dotProduct+", initialMag: "+initialMagnitude+", currentMag: "+currentMagnitude);
 
         return angle;
     }
