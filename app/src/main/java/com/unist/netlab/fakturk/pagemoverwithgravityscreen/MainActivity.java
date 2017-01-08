@@ -5,9 +5,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
+import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,7 +34,7 @@ public class MainActivity extends AppCompatActivity
 
 
 
-    float[] acc, gyr, oldAcc, oldGyr,mag, oldMag,initialMag,gravity, sideY, sideX, oldGravity, rotatedGyr, rotational_vel, rotational_vel_earth, linear_acc, linear_vel, linear_dist, startingEuler;
+    float[] acc, gyr, oldAcc, oldGyr,mag, oldMag,initialMag,gravity, sideY, sideX, oldGravity, rotatedGyr, rotational_vel, rotational_vel_earth, linear_acc, linear_vel, linear_dist, startingEuler, rotMag;
     float[][] rotation, resultOfDynamic;
     boolean start, onlyGyr, accEnable, resetEnable, smoothEnable;
 
@@ -82,6 +83,7 @@ public class MainActivity extends AppCompatActivity
         gyr = new float[3];
         mag = new float[3];
         initialMag = new float[]{0, 0, 0};
+        rotMag = new float[]{0, 0, 0};
         oldAcc = null;
         oldGyr = null;
         oldMag =null;
@@ -168,7 +170,7 @@ public class MainActivity extends AppCompatActivity
                 if (acc != null && gyr != null && mag!=null &&start != true )
                 {
                     start = true;
-                    System.out.println("start");
+                    Log.d("start","");
                     float accNorm = (float) Math.sqrt(Math.pow(acc[0], 2) + Math.pow(acc[1], 2) + Math.pow(acc[2], 2));
                     for (int j = 0; j < 3; j++)
                     {
@@ -176,10 +178,13 @@ public class MainActivity extends AppCompatActivity
                     }
                     rotation = orientation.rotationFromGravity(gravity);
                     startingEuler = orientation.eulerFromRotation(rotation);
+                    Log.d("initial mag  : ",initialMag[0]+" "+initialMag[1]+" "+initialMag[2]);
 
                     initialMag = orientation.rotationVectorMultiplication(orientation.rotationTranspose(rotation),mag);
 
+
 //                    System.arraycopy(mag, 0, initialMag, 0, mag.length);
+                    Log.d("initial mag  : ",initialMag[0]+" "+initialMag[1]+" "+initialMag[2]);
 
 
 
@@ -250,9 +255,12 @@ public class MainActivity extends AppCompatActivity
 
                         gravity = g.gravityAfterRotation(rotation);
 //                        angle = orientation.angleBetweenMag(initialMag,mag);
-                        angle =  (orientation.angleBetweenMag(initialMag,orientation.rotationVectorMultiplication(orientation.rotationTranspose(rotation),mag)));
 
+//                        rotation = orientation.updateRotationAfterOmegaZ(rotation, omega_z);
+                        rotMag = orientation.rotationVectorMultiplication(orientation.rotationTranspose(rotation),mag);
+                        angle =  (orientation.angleBetweenMag(initialMag,orientation.rotationVectorMultiplication(orientation.rotationTranspose(rotation),mag)));
                         rotation = orientation.updateRotationAfterOmegaZ(rotation, angle);
+
                         float[] reRotatedGyr = orientation.reRotatedGyr(rotatedGyr,rotation);
 
 //                        rotational_vel_earth[0]+=reRotatedGyr[0]* dynamic.getDeltaT();
@@ -318,178 +326,50 @@ public class MainActivity extends AppCompatActivity
 
                     //set views
                     int lS = 20; // size coefficient of the line
-//                    System.out.println("magnetometer readings : "+mag[0]+", "+mag[1]+", "+mag[2]);
-//                    System.out.println("initial magnetometer readings : "+initialMag[0]+", "+initialMag[1]+", "+initialMag[2]);
-
-                    float[] rotMag = orientation.rotationVectorMultiplication(orientation.rotationTranspose(rotation),mag);
-
-//                    System.out.println("acc readings : "+acc[0]+", "+acc[1]+", "+acc[2]);
-//                    System.out.println("gyr readings : "+gyr[0]+", "+gyr[1]+", "+gyr[2]);
-//                    System.out.println("magnetometer readings : "+mag[0]+", "+mag[1]+", "+mag[2]);
-//                    System.out.println("initial magnetometer readings : "+initialMag[0]+", "+initialMag[1]+", "+initialMag[2]);
-//                    System.out.println("rotated magnetometer readings : "+rotMag[0]+", "+rotMag[1]+", "+rotMag[2]);
-//                    System.out.println("gravity readings : "+gravity[0]+", "+gravity[1]+", "+gravity[2]);
+//                    Log.d("magnetometer readings : ",mag[0]+", "+mag[1]+", "+mag[2]);
+//                    Log.d("initial magnetometer readings : ",initialMag[0]+", "+initialMag[1]+", "+initialMag[2]);
 
 
-                    System.out.print("angle : "+Math.toDegrees(angle));
-                    System.out.println(", "+omega_z);
-//                    System.out.println("angle : "+orientation.angleBetweenMag(initialMag,mag));
+
+//                    Log.d("acc readings : ",acc[0]+", "+acc[1]+", "+acc[2]);
+//                    Log.d("gyr readings : ",gyr[0]+", "+gyr[1]+", "+gyr[2]);
+//                    Log.d("magnetometer  : ",mag[0]+" "+mag[1]+" "+mag[2]);
+//                    Log.d("initial mag  : ",initialMag[0]+" "+initialMag[1]+" "+initialMag[2]);
+//                    Log.d("rotated mag  : ",rotMag[0]+" "+rotMag[1]+" "+rotMag[2]);
+//                    Log.d("gravity readings : ",gravity[0]+", "+gravity[1]+", "+gravity[2]);
+
+
+                    Log.d("angle: ",Math.toDegrees(angle) +", "+Math.toDegrees(omega_z));
+
+//                    Log.d("angle : ", String.valueOf(orientation.angleBetweenMag(initialMag,mag)));
                     float magMagnitude = (float) Math.sqrt( Math.pow(rotMag[0],2)+Math.pow(rotMag[1],2)+Math.pow(rotMag[2],2));
-//                    magMagnitude = 10;
+//                    float magMagnitude = 300;
                     float mS =lS*10/magMagnitude; // magnetometer line size coefficient
                     gravityView.setLine((-1)*gravity[0]*lS,gravity[1]*lS,gravity[2]*lS);
 
-                    compassView.setLine(mag[0]*mS, -1*mag[1]*mS, mag[2]*mS);
+                    compassView.setLine(rotMag[0]*mS, -1*rotMag[1]*mS, rotMag[2]*mS);
                     compassView.setAccLine(initialMag[0]*mS, -1*initialMag[1]*mS, initialMag[2]*mS);
                     compassView.setType(String.valueOf(Math.toDegrees(angle)));
 
                     netlab.setRotationX(rotationValues[0] * sliderValue);
                     netlab.setRotationY( rotationValues[1] * sliderValue);
                     netlab.setRotation(rotationValues[2] * sliderValue);
-//                    System.out.println(rotationValues[2]*sliderValue);
+//                    Log.d(rotationValues[2]*sliderValue);
 
 
                 }
             }
         }, new IntentFilter(SensorService.ACTION_SENSOR_BROADCAST));
 
-        buttonStart.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View v)
-            {
+        buttonStart.setOnClickListener(mGlobal_OnClickListener);
+        buttonReset.setOnClickListener(mGlobal_OnClickListener);
+        switchGyr.setOnClickListener(mGlobal_OnClickListener);
+        switchAcc.setOnClickListener(mGlobal_OnClickListener);
+        switchReset.setOnClickListener(mGlobal_OnClickListener);
+        switchSmooth.setOnClickListener(mGlobal_OnClickListener);
+        switchGra.setOnClickListener(mGlobal_OnClickListener);
+        switchCompass.setOnClickListener(mGlobal_OnClickListener);
 
-                if (buttonStart.getText().equals("Start"))
-                {
-                    buttonStart.setText("Stop");
-                    startService(new Intent(MainActivity.this, SensorService.class));
-
-                } else
-                {
-                    buttonStart.setText("Start");
-                    stopService(new Intent(MainActivity.this, SensorService.class));
-
-
-                }
-            }
-        });
-
-        buttonReset.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View v)
-            {
-//                acc= new float[]{0, 0, 0};
-//                gyr = new float[]{0, 0, 0};
-                netlab.setTranslationX(0);
-                netlab.setTranslationY(0);
-                reset();
-            }
-        });
-
-
-        switchGyr.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-
-                if (switchGyr.isChecked())
-                {
-                    onlyGyr = true;
-                    switchReset.setEnabled(false);
-                    switchSmooth.setEnabled(false);
-                } else
-                {
-                    onlyGyr = false;
-                    switchReset.setEnabled(true);
-                    switchSmooth.setEnabled(true);
-                }
-            }
-        });
-
-        switchAcc.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-
-                if (switchAcc.isChecked())
-                {
-                    accEnable = true;
-                } else
-                {
-                    accEnable = false;
-                }
-            }
-        });
-
-        switchReset.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-
-                if (switchReset.isChecked())
-                {
-                    resetEnable = true;
-                    switchSmooth.setEnabled(true);
-                } else
-                {
-                    resetEnable = false;
-                    switchSmooth.setEnabled(false);
-                    switchSmooth.setChecked(false);
-                    smoothEnable=false;
-                }
-            }
-        });
-
-        switchSmooth.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-
-                if (switchSmooth.isChecked())
-                {
-                    smoothEnable = true;
-                } else
-                {
-                    smoothEnable = false;
-                }
-            }
-        });
-
-        switchGra.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-
-                if (switchGra.isChecked())
-                {
-                    gravityView.setVisibility(View.VISIBLE);
-                } else
-                {
-                    gravityView.setVisibility(View.INVISIBLE);
-                }
-            }
-        });
-        switchCompass.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-
-                if (switchCompass.isChecked())
-                {
-                    compassView.setVisibility(View.VISIBLE);
-                } else
-                {
-                    compassView.setVisibility(View.INVISIBLE);
-                }
-            }
-        });
 
         slider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener()
         {
@@ -519,6 +399,97 @@ public class MainActivity extends AppCompatActivity
 
     }
 
+    final View.OnClickListener mGlobal_OnClickListener = new View.OnClickListener() {
+        public void onClick(final View v) {
+            switch(v.getId()) {
+                case R.id.buttonStart:
+                    if (buttonStart.getText().equals("Start"))
+                    {
+                        buttonStart.setText("Stop");
+                        startService(new Intent(MainActivity.this, SensorService.class));
+
+                    } else
+                    {
+                        buttonStart.setText("Start");
+                        stopService(new Intent(MainActivity.this, SensorService.class));
+
+
+                    }
+                    break;
+                case R.id.buttonReset:
+//                  acc= new float[]{0, 0, 0};
+//                  gyr = new float[]{0, 0, 0};
+                    netlab.setTranslationX(0);
+                    netlab.setTranslationY(0);
+                    reset();
+                    break;
+                case R.id.switch_gyr:
+                    if (switchGyr.isChecked())
+                    {
+                        onlyGyr = true;
+                        switchReset.setEnabled(false);
+                        switchSmooth.setEnabled(false);
+                    } else
+                    {
+                        onlyGyr = false;
+                        switchReset.setEnabled(true);
+                        switchSmooth.setEnabled(true);
+                    }
+                    break;
+                case R.id.switchAcc:
+                    if (switchAcc.isChecked())
+                    {
+                        accEnable = true;
+                    } else
+                    {
+                        accEnable = false;
+                    }
+                    break;
+                case R.id.switchReset:
+                    if (switchReset.isChecked())
+                    {
+                        resetEnable = true;
+                        switchSmooth.setEnabled(true);
+                    } else
+                    {
+                        resetEnable = false;
+                        switchSmooth.setEnabled(false);
+                        switchSmooth.setChecked(false);
+                        smoothEnable=false;
+                    }
+                    break;
+                case R.id.switchSmoothReset:
+                    if (switchSmooth.isChecked())
+                    {
+                        smoothEnable = true;
+                    } else
+                    {
+                        smoothEnable = false;
+                    }
+                    break;
+                case R.id.switchGra:
+
+                    if (switchGra.isChecked())
+                    {
+                        gravityView.setVisibility(View.VISIBLE);
+                    } else
+                    {
+                        gravityView.setVisibility(View.INVISIBLE);
+                    }
+                    break;
+                case R.id.switchCompass:
+                    if (switchCompass.isChecked())
+                    {
+                        compassView.setVisibility(View.VISIBLE);
+                    } else
+                    {
+                        compassView.setVisibility(View.INVISIBLE);
+                    }
+                    break;
+            }
+        }
+    };
+
     private void smoothReset(float factor)
     {
 //            float factor=10f;
@@ -534,9 +505,9 @@ public class MainActivity extends AppCompatActivity
         omega_y /=factor;
         omega_z /=factor;
 
-//        System.out.println("rotation before: "+netlab.getRotation());
+//        Log.d("rotation before: "+netlab.getRotation());
         netlab.setRotation(netlab.getRotation()/factor);
-//        System.out.println("rotation after: "+netlab.getRotation());
+//        Log.d("rotation after: "+netlab.getRotation());
         netlab.setRotationX(netlab.getRotationX()/factor);
         netlab.setRotationY(netlab.getRotationY()/factor);
 
@@ -557,7 +528,7 @@ public class MainActivity extends AppCompatActivity
     private void reset()
     {
 
-
+        Log.d("initial mag  : ",initialMag[0]+" "+initialMag[1]+" "+initialMag[2]);
 
         netlab.setRotation(0);
         netlab.setRotationX(0);
@@ -571,6 +542,7 @@ public class MainActivity extends AppCompatActivity
         rotational_vel_earth[1] = 0;
         rotational_vel_earth[2] = 0;
         rotational_vel=new float[]{0, 0, 0};
+        angle=0;
 
 
 
