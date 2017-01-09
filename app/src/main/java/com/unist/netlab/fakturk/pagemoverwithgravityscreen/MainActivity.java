@@ -8,16 +8,23 @@ import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
+import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
+
+import java.text.DecimalFormat;
+
+import Jama.Matrix;
 
 import static android.hardware.SensorManager.GRAVITY_EARTH;
 
@@ -27,14 +34,22 @@ public class MainActivity extends AppCompatActivity
     WebView netlab;
     ArrowView gravityView, compassView;
     Button buttonStart, buttonReset;
-    Switch switchGyr, switchAcc, switchReset, switchSmooth, switchGra, switchCompass;
+    Switch switchGyr, switchAcc, switchReset, switchSmooth, switchGra, switchCompass, switchWeb;
     SeekBar slider;
     ViewGroup.MarginLayoutParams marginParams;
-    TextView sensitivity;
+    TextView sensitivity, textViewLinear;
+
+    Kalman kalman;
+    Matrix X;
+    RelativeLayout root;
+    Filter filter;
+    StatisticCalculations statistic;
+    DecimalFormat df ;
 
 
 
-    float[] acc, gyr, oldAcc, oldGyr,mag, oldMag,initialMag,gravity, sideY, sideX, oldGravity, rotatedGyr, rotational_vel, rotational_vel_earth, linear_acc, linear_vel, linear_dist, startingEuler, rotMag;
+    float[] acc, gyr, oldAcc, oldGyr,mag, oldMag,initialMag,gravity, sideY, sideX,velocity,distance, oldGravity, rotatedGyr, rotational_vel, rotational_vel_earth, linear_acc, linear_vel, linear_dist, startingEuler, rotMag;
+    float[] lPAcc,mfLPAcc,hpVel;
     float[][] rotation, resultOfDynamic;
     boolean start, onlyGyr, accEnable, resetEnable, smoothEnable;
 
@@ -43,7 +58,16 @@ public class MainActivity extends AppCompatActivity
     DynamicAcceleration dynamic;
     int counter;
     float omega_x, omega_y, omega_z, angle;
+    float new_x,new_y;
     int sliderValue;
+
+
+    int top ;
+    int bottom ;
+    int left;
+    int right ;
+    int height ;
+    int width ;
 
 
     @Override
@@ -52,6 +76,8 @@ public class MainActivity extends AppCompatActivity
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        root = (RelativeLayout) findViewById(R.id.activity_main);
+
         buttonStart = (Button) findViewById(R.id.buttonStart);
         buttonReset = (Button) findViewById(R.id.buttonReset);
         switchGyr = (Switch) findViewById(R.id.switch_gyr);
@@ -60,11 +86,31 @@ public class MainActivity extends AppCompatActivity
         switchSmooth = (Switch) findViewById(R.id.switchSmoothReset);
         switchGra = (Switch) findViewById(R.id.switchGra);
         switchCompass = (Switch) findViewById(R.id.switchCompass);
+        switchWeb = (Switch) findViewById(R.id.switchWeb);
         sensitivity = (TextView) findViewById(R.id.textView);
+        textViewLinear = (TextView) findViewById(R.id.textViewLinear);
         slider = (SeekBar) findViewById(R.id.seekBar);
         sliderValue = 60;
         slider.setMax(60);
         slider.setProgress(60);
+
+        kalman = new Kalman();
+        top = root.getTop();
+        bottom = root.getBottom();
+        left = root.getLeft();
+        right = root.getRight();
+        height = textViewLinear.getHeight();
+        width = textViewLinear.getWidth();
+
+         velocity = new float[3];
+        distance = new float[3];
+
+        filter = new Filter();
+        statistic = new StatisticCalculations();
+        df = new DecimalFormat("#.####");
+
+
+
 
 
 
@@ -99,6 +145,10 @@ public class MainActivity extends AppCompatActivity
         linear_vel = new float[]{0,0,0};
         linear_dist = new float[]{0,0,0};
         startingEuler= new float[]{0,0,0};
+
+        lPAcc= new float[]{0,0,0};
+        mfLPAcc= new float[]{0,0,0};
+        hpVel= new float[]{0,0,0};
 
         g = new Gravity();
         orientation = new Orientation();
@@ -178,13 +228,14 @@ public class MainActivity extends AppCompatActivity
                     }
                     rotation = orientation.rotationFromGravity(gravity);
                     startingEuler = orientation.eulerFromRotation(rotation);
-                    Log.d("initial mag  : ",initialMag[0]+" "+initialMag[1]+" "+initialMag[2]);
+//                    Log.d("initial mag  : ",initialMag[0]+" "+initialMag[1]+" "+initialMag[2]);
 
                     initialMag = orientation.rotationVectorMultiplication(orientation.rotationTranspose(rotation),mag);
 
 
 //                    System.arraycopy(mag, 0, initialMag, 0, mag.length);
-                    Log.d("initial mag  : ",initialMag[0]+" "+initialMag[1]+" "+initialMag[2]);
+//                    Log.d("initial mag  : ",initialMag[0]+" "+initialMag[1]+" "+initialMag[2]);
+
 
 
 
@@ -311,6 +362,7 @@ public class MainActivity extends AppCompatActivity
                             linear_dist[i]+=linear_vel[i]*dynamic.deltaT;
 
                         }
+
 //                        netlab.setTranslationX(linear_dist[0]);
 //                        netlab.setTranslationY(linear_dist[1]);
 //                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
@@ -339,7 +391,7 @@ public class MainActivity extends AppCompatActivity
 //                    Log.d("gravity readings : ",gravity[0]+", "+gravity[1]+", "+gravity[2]);
 
 
-                    Log.d("angle: ",Math.toDegrees(angle) +", "+Math.toDegrees(omega_z));
+//                    Log.d("angle: ",Math.toDegrees(angle) +", "+Math.toDegrees(omega_z));
 
 //                    Log.d("angle : ", String.valueOf(orientation.angleBetweenMag(initialMag,mag)));
                     float magMagnitude = (float) Math.sqrt( Math.pow(rotMag[0],2)+Math.pow(rotMag[1],2)+Math.pow(rotMag[2],2));
@@ -356,6 +408,86 @@ public class MainActivity extends AppCompatActivity
                     netlab.setRotation(rotationValues[2] * sliderValue);
 //                    Log.d(rotationValues[2]*sliderValue);
 
+//                    Log.d("ACC:",linear_acc[0]+" "+linear_acc[1]+" "+linear_acc[2]+" "+gravity[0]+" "+gravity[1]+" "+gravity[2]+" "+acc[0]+" "+acc[1]+" "+acc[2]);
+//                    X = kalman.filter(dynamic.deltaT,linear_acc);
+                    statistic.update(linear_acc);
+                    lPAcc = filter.recursivelowPass(0.85f,acc,lPAcc);
+                    mfLPAcc = filter.recursiveMechanic(statistic.getMean(),lPAcc);
+                    float[] oldVel = new float[mfLPAcc.length];
+                    for (int i = 0; i < 3; i++)
+                    {
+                        oldVel[i] = velocity[i];
+                        if (Math.abs( mfLPAcc[i])>0.02)
+                        velocity[i]= velocity[i] +dynamic.getDeltaT()*mfLPAcc[i];
+                        else
+                            velocity[i]=0;
+
+                    }
+                    hpVel=filter.recursivehighPass(0.85f,velocity,oldVel,hpVel);
+                    for (int i = 0; i < distance.length; i++)
+                    {
+                        distance[i]= distance[i] +dynamic.getDeltaT()*hpVel[i];
+                    }
+                    DisplayMetrics dm = new DisplayMetrics();
+                    getWindowManager().getDefaultDisplay().getMetrics(dm);
+                    float[] px = new float[3];
+
+                    for (int i = 0; i < 3; i++) {
+                        px[i] = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, distance[i]*1000,
+                                dm);
+                    }
+
+//                    new_x -= px[0];
+//                    new_y -= px[1];
+//
+//                    //oldVelocity = velocity;
+//
+//                    if(new_x<50)
+//                    {
+//                        new_x=50;
+//                        velocity[0] = 0;
+//                        // distanceX = 0;
+//                    }
+//                    if (new_x>right-width-50)
+//                    {
+//                        new_x = right-width-50;
+//                        velocity[0] = 0;
+//                        //distanceX = 0;
+//                    }
+//                    if(new_y<50)
+//                    {
+//                        new_y=50;
+//                        velocity[0] = 0;
+//                        // distanceX = 0;
+//                    }
+//                    if (new_y>bottom-height-50)
+//                    {
+//                        new_y = bottom-height-50;
+//                        velocity[0] = 0;
+//                        //distanceX = 0;
+//                    }
+//
+//                    textViewLinear.setX(new_x);
+//                    textViewLinear.setY(new_y);
+
+
+                    textViewLinear.setText(
+                            " linear acc : "+df.format( mfLPAcc[0])
+//                            +",\n acc : "+acc[0]
+                            +",\n VelocityX : "+df.format( hpVel[0]*1000)
+                            +
+                                    ",\n distanceX : "+df.format( distance[0]*100)
+//                            + "\n new_x :"+new_x
+
+
+
+                    );
+
+                    Log.d(" linear acc : ",df.format( mfLPAcc[0])+" "+df.format( hpVel[0]*1000)+" "+df.format( distance[0]*100));
+
+
+
+
 
                 }
             }
@@ -369,6 +501,7 @@ public class MainActivity extends AppCompatActivity
         switchSmooth.setOnClickListener(mGlobal_OnClickListener);
         switchGra.setOnClickListener(mGlobal_OnClickListener);
         switchCompass.setOnClickListener(mGlobal_OnClickListener);
+        switchWeb.setOnClickListener(mGlobal_OnClickListener);
 
 
         slider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener()
@@ -486,6 +619,18 @@ public class MainActivity extends AppCompatActivity
                         compassView.setVisibility(View.INVISIBLE);
                     }
                     break;
+                case R.id.switchWeb:
+                    if (switchWeb.isChecked())
+                    {
+                        netlab.setVisibility(View.VISIBLE);
+                        textViewLinear.setVisibility(View.INVISIBLE);
+
+                    } else
+                    {
+                        netlab.setVisibility(View.INVISIBLE);
+                        textViewLinear.setVisibility(View.VISIBLE);
+                    }
+                    break;
             }
         }
     };
@@ -542,6 +687,12 @@ public class MainActivity extends AppCompatActivity
         rotational_vel_earth[1] = 0;
         rotational_vel_earth[2] = 0;
         rotational_vel=new float[]{0, 0, 0};
+        for (int i = 0; i < 3; i++)
+        {
+            velocity[i]=0;
+            distance[i]=0;
+        }
+
         angle=0;
 
 

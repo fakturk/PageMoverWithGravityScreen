@@ -17,7 +17,8 @@
 
         android:layout_below="@+id/textView"
         android:id="@+id/webView"
-        android:layout_above="@+id/switchAcc">
+        android:layout_above="@+id/switchAcc"
+        android:visibility="invisible">
 
     </WebView>
 
@@ -83,7 +84,7 @@
         android:id="@+id/switchAcc"
         android:layout_above="@+id/switchSmoothReset"
         android:layout_toEndOf="@+id/buttonReset"
-        android:enabled="false"/>
+        android:checked="true"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -142,5 +143,30 @@
         android:layout_alignParentStart="true"
         android:layout_marginStart="14dp"
         android:layout_toStartOf="@+id/textView"/>
+
+    <TextView
+        android:text="0"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/graView"
+        android:layout_centerHorizontal="true"
+        android:id="@+id/textViewLinear"
+        android:visibility="visible"
+        android:background="@android:color/darker_gray"
+        android:layout_width="wrap_content"
+        android:textAlignment="center"/>
+
+    <Switch
+        android:text="Web"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/switchWeb"
+        android:checked="false"
+        android:fontFamily="sans-serif-medium"
+        android:textSize="14sp"
+        android:layout_x="14dp"
+        android:layout_y="30dp"
+        android:layout_below="@+id/seekBar"
+        android:layout_alignStart="@+id/switchCompass"
+        android:layout_toStartOf="@+id/switchAcc"/>
 
 </RelativeLayout>
